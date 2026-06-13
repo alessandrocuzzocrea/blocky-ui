@@ -34,11 +34,13 @@ const CopyableCell = ({
   };
 
   const content = (
-    <div className={cn("min-w-0", truncate && "max-w-50 truncate")}>{value}</div>
+    <div className={cn("min-w-0", truncate && "max-w-50 truncate")}>
+      {value}
+    </div>
   );
 
   return (
-    <div className="flex items-center gap-1 group">
+    <div className="group flex items-center gap-1">
       {showTooltip ? (
         <TooltipProvider>
           <Tooltip delayDuration={100}>
@@ -54,7 +56,7 @@ const CopyableCell = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        className="h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
         onClick={onCopy}
       >
         <Copy className="h-3 w-3" />
