@@ -50,7 +50,8 @@ export default function RootLayout({
             theme="dark"
             position="bottom-right"
             toastOptions={{
-              className: "border-border bg-card text-foreground",
+              className:
+                "border-border bg-card/40 text-foreground backdrop-blur-md",
             }}
           />
           <Pattern />
