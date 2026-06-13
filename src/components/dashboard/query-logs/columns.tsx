@@ -10,6 +10,58 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Badge, type BadgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "~/lib/utils";
+
+const CopyableCell = ({
+  value,
+  truncate = true,
+  showTooltip = false,
+}: {
+  value: string;
+  truncate?: boolean;
+  showTooltip?: boolean;
+}) => {
+  const onCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void navigator.clipboard.writeText(value);
+    toast.success("Copied to clipboard", {
+      description: value,
+    });
+  };
+
+  const content = (
+    <div className={cn("min-w-0", truncate && "max-w-50 truncate")}>{value}</div>
+  );
+
+  return (
+    <div className="flex items-center gap-1 group">
+      {showTooltip ? (
+        <TooltipProvider>
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>{content}</TooltipTrigger>
+            <TooltipContent>
+              <p>{value}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        content
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        onClick={onCopy}
+      >
+        <Copy className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+};
 
 export const columns: ColumnDef<LogEntry>[] = [
   {
@@ -34,6 +86,11 @@ export const columns: ColumnDef<LogEntry>[] = [
   {
     accessorKey: "clientName",
     header: "Client Name",
+    cell: ({ row }) => {
+      const clientName = row.original.clientName;
+      if (!clientName) return null;
+      return <CopyableCell value={clientName} />;
+    },
   },
   {
     accessorKey: "questionName",
@@ -41,20 +98,7 @@ export const columns: ColumnDef<LogEntry>[] = [
     cell: ({ row }) => {
       const domain = row.original.questionName;
       if (!domain) return null;
-      return (
-        <TooltipProvider>
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger>
-              <div className="flex h-full items-center">
-                <div className="max-w-50 truncate">{domain}</div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{domain}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      return <CopyableCell value={domain} showTooltip />;
     },
   },
   {
