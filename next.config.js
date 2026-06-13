@@ -8,6 +8,10 @@ import "./src/env.js";
 const config = {
   output: "standalone",
   reactCompiler: true,
+  devIndicators: {
+    appIsrStatus: false,
+  },
+  allowedDevOrigins: ["192.168.1.23", "localhost:3000"],
 };
 
 export default config;
