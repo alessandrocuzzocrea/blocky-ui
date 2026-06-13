@@ -10,6 +10,83 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Badge, type BadgeVariants } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "~/lib/utils";
+
+const CopyableCell = ({
+  value,
+  truncate = true,
+  showTooltip = false,
+}: {
+  value: string;
+  truncate?: boolean;
+  showTooltip?: boolean;
+}) => {
+  const onCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const copyToClipboard = async () => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = value;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand("copy");
+        } catch (err) {
+          console.error("Fallback copy failed", err);
+        }
+        document.body.removeChild(textArea);
+      }
+      toast.success("Copied to clipboard", {
+        description: value,
+      });
+    };
+
+    void copyToClipboard();
+  };
+
+  const content = (
+    <div className={cn("min-w-0", truncate && "max-w-50 truncate")}>
+      {value}
+    </div>
+  );
+
+  return (
+    <div className="group flex items-center gap-1">
+      {showTooltip ? (
+        <TooltipProvider>
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>{content}</TooltipTrigger>
+            <TooltipContent>
+              <p>{value}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        content
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+        onClick={onCopy}
+      >
+        <Copy className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+};
 
 export const columns: ColumnDef<LogEntry>[] = [
   {
@@ -34,6 +111,11 @@ export const columns: ColumnDef<LogEntry>[] = [
   {
     accessorKey: "clientName",
     header: "Client Name",
+    cell: ({ row }) => {
+      const clientName = row.original.clientName;
+      if (!clientName) return null;
+      return <CopyableCell value={clientName} />;
+    },
   },
   {
     accessorKey: "questionName",
@@ -41,20 +123,7 @@ export const columns: ColumnDef<LogEntry>[] = [
     cell: ({ row }) => {
       const domain = row.original.questionName;
       if (!domain) return null;
-      return (
-        <TooltipProvider>
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger>
-              <div className="flex h-full items-center">
-                <div className="max-w-50 truncate">{domain}</div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{domain}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      return <CopyableCell value={domain} showTooltip />;
     },
   },
   {

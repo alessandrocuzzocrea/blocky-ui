@@ -35,6 +35,12 @@ const api = ky.create({
 
 export const blockyRouter = createTRPCRouter({
   blockingStatus: publicProcedure.query(async () => {
+    if (env.DEMO_MODE) {
+      return {
+        enabled: true,
+        disabledGroups: [],
+      };
+    }
     try {
       const response = await api.get("api/blocking/status");
 
@@ -68,6 +74,9 @@ export const blockyRouter = createTRPCRouter({
     }
   }),
   blockingEnable: publicProcedure.mutation(async () => {
+    if (env.DEMO_MODE) {
+      return { success: true };
+    }
     const response = await api.get("api/blocking/enable");
     if (!response.ok) {
       throw new Error(`Failed to enable blocking: ${response.statusText}`);
@@ -84,6 +93,9 @@ export const blockyRouter = createTRPCRouter({
         .optional(),
     )
     .mutation(async ({ input }) => {
+      if (env.DEMO_MODE) {
+        return { success: true };
+      }
       const searchParams = new URLSearchParams();
 
       if (input?.duration) searchParams.set("duration", input.duration);
